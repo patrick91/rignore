@@ -1,0 +1,13 @@
+[package]
+name = "rignore"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "rignore"
+crate-type = ["cdylib"]
+
+[dependencies]
+ignore = "0.4.22"
+pyo3 = "0.22.0"
