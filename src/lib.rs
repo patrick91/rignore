@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use pyo3::prelude::*;
 
 #[pyclass]
@@ -22,6 +24,7 @@ impl Walker {
         follow_links=None,
         case_insensitive=None,
         same_file_system=None,
+        filter_entry=None,
     ))]
     fn new(
         path: &str,
@@ -46,6 +49,7 @@ impl Walker {
 
         case_insensitive: Option<bool>,
         same_file_system: Option<bool>,
+        filter_entry: Option<PyObject>,
     ) -> Self {
         let mut builder = ignore::WalkBuilder::new(path);
 
@@ -104,6 +108,19 @@ impl Walker {
             builder.same_file_system(same_file_system);
         }
 
+        if let Some(filter_func) = filter_entry {
+            let filter = Arc::new(move |entry: &ignore::DirEntry| -> bool {
+                Python::with_gil(|py| {
+                    let args = (entry.path().display().to_string(),);
+                    match filter_func.call1(py, args) {
+                        Ok(result) => result.extract(py).unwrap_or(true),
+                        Err(_) => true,
+                    }
+                })
+            });
+            builder.filter_entry(move |entry| filter(entry));
+        }
+
         Walker(builder.build())
     }
 
@@ -140,6 +157,7 @@ impl Walker {
     follow_links=None,
     case_insensitive=None,
     same_file_system=None,
+    filter_entry=None,
 ))]
 fn walk(
     // same as walker::new
@@ -165,6 +183,8 @@ fn walk(
 
     case_insensitive: Option<bool>,
     same_file_system: Option<bool>,
+
+    filter_entry: Option<PyObject>,
 ) -> PyResult<Walker> {
     Ok(Walker::new(
         path,
@@ -182,6 +202,7 @@ fn walk(
         follow_links,
         case_insensitive,
         same_file_system,
+        filter_entry,
     ))
 }
 
