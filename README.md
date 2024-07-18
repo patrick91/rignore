@@ -50,6 +50,7 @@ rignore.walk(
     follow_links=None,
     case_insensitive=None,
     same_file_system=None,
+    filter_entry=None,
 )
 ```
 
@@ -70,6 +71,7 @@ rignore.walk(
 - `follow_links` (bool, optional): Whether to follow symbolic links.
 - `case_insensitive` (bool, optional): Whether to use case-insensitive matching for ignore patterns.
 - `same_file_system` (bool, optional): Whether to stay on the same file system.
+- `filter_entry` (Callable[[str, bool], optional): Custom filter function to exclude entries.
 
 ## ⚡ Performance
 
