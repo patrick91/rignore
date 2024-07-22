@@ -1,6 +1,19 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use pyo3::prelude::*;
+
+fn path_buf_to_pathlib_path(py: Python, path_buf: PathBuf) -> PyResult<Py<PyAny>> {
+    let path_str = path_buf
+        .to_str()
+        .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyValueError, _>("Invalid path"))?;
+
+    let pathlib_module = py.import_bound("pathlib")?;
+    let path_class = pathlib_module.getattr("Path")?;
+    let pathlib_path = path_class.call1((path_str,))?;
+
+    Ok(pathlib_path.into_py(py))
+}
 
 #[pyclass]
 pub struct Walker(ignore::Walk);
@@ -24,10 +37,10 @@ impl Walker {
         follow_links=None,
         case_insensitive=None,
         same_file_system=None,
-        filter_entry=None,
+        should_exclude_entry=None,
     ))]
     fn new(
-        path: &str,
+        path: PathBuf,
 
         ignore_hidden: Option<bool>,
 
@@ -49,7 +62,7 @@ impl Walker {
 
         case_insensitive: Option<bool>,
         same_file_system: Option<bool>,
-        filter_entry: Option<PyObject>,
+        should_exclude_entry: Option<PyObject>,
     ) -> Self {
         let mut builder = ignore::WalkBuilder::new(path);
 
@@ -108,17 +121,26 @@ impl Walker {
             builder.same_file_system(same_file_system);
         }
 
-        if let Some(filter_func) = filter_entry {
-            let filter = Arc::new(move |entry: &ignore::DirEntry| -> bool {
+        if let Some(filter_func) = should_exclude_entry {
+            let filter = Arc::new(move |entry: &ignore::DirEntry| -> PyResult<bool> {
                 Python::with_gil(|py| {
-                    let args = (entry.path().display().to_string(),);
-                    match filter_func.call1(py, args) {
-                        Ok(result) => result.extract(py).unwrap_or(true),
-                        Err(_) => true,
-                    }
+                    let path_buf = entry.path().to_path_buf();
+                    let pathlib_path = path_buf_to_pathlib_path(py, path_buf)?;
+                    let args = (pathlib_path,);
+                    filter_func.call1(py, args)?.extract(py)
                 })
             });
-            builder.filter_entry(move |entry| filter(entry));
+
+            builder.filter_entry(move |entry| {
+                match filter(entry) {
+                    Ok(result) => result,
+                    Err(e) => {
+                        // Log the error or handle it as appropriate for your application
+                        eprintln!("Error in filter function: {:?}", e);
+                        false // Exclude the entry if there's an error
+                    }
+                }
+            });
         }
 
         Walker(builder.build())
@@ -128,15 +150,20 @@ impl Walker {
         Ok(slf.into())
     }
 
-    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<String>> {
-        match slf.0.next() {
-            Some(Ok(entry)) => Ok(Some(entry.path().display().to_string())),
+    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<Py<PyAny>>> {
+        Python::with_gil(|py| match slf.0.next() {
+            Some(Ok(entry)) => {
+                let path_buf = entry.path().to_path_buf();
+                let pathlib_path = path_buf_to_pathlib_path(py, path_buf)?;
+
+                Ok(Some(pathlib_path))
+            }
             Some(Err(err)) => Err(PyErr::new::<pyo3::exceptions::PyOSError, _>(format!(
                 "{}",
                 err
             ))),
             None => Ok(None),
-        }
+        })
     }
 }
 
@@ -157,11 +184,10 @@ impl Walker {
     follow_links=None,
     case_insensitive=None,
     same_file_system=None,
-    filter_entry=None,
+    should_exclude_entry=None,
 ))]
 fn walk(
-    // same as walker::new
-    path: &str,
+    path: PathBuf,
 
     ignore_hidden: Option<bool>,
 
@@ -184,7 +210,7 @@ fn walk(
     case_insensitive: Option<bool>,
     same_file_system: Option<bool>,
 
-    filter_entry: Option<PyObject>,
+    should_exclude_entry: Option<PyObject>,
 ) -> PyResult<Walker> {
     Ok(Walker::new(
         path,
@@ -202,7 +228,7 @@ fn walk(
         follow_links,
         case_insensitive,
         same_file_system,
-        filter_entry,
+        should_exclude_entry,
     ))
 }
 
