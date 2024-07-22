@@ -37,7 +37,7 @@ impl Walker {
         follow_links=None,
         case_insensitive=None,
         same_file_system=None,
-        filter_entry=None,
+        should_exclude_entry=None,
     ))]
     fn new(
         path: PathBuf,
@@ -62,7 +62,7 @@ impl Walker {
 
         case_insensitive: Option<bool>,
         same_file_system: Option<bool>,
-        filter_entry: Option<PyObject>,
+        should_exclude_entry: Option<PyObject>,
     ) -> Self {
         let mut builder = ignore::WalkBuilder::new(path);
 
@@ -121,7 +121,7 @@ impl Walker {
             builder.same_file_system(same_file_system);
         }
 
-        if let Some(filter_func) = filter_entry {
+        if let Some(filter_func) = should_exclude_entry {
             let filter = Arc::new(move |entry: &ignore::DirEntry| -> PyResult<bool> {
                 Python::with_gil(|py| {
                     let path_buf = entry.path().to_path_buf();
@@ -184,7 +184,7 @@ impl Walker {
     follow_links=None,
     case_insensitive=None,
     same_file_system=None,
-    filter_entry=None,
+    should_exclude_entry=None,
 ))]
 fn walk(
     path: PathBuf,
@@ -210,7 +210,7 @@ fn walk(
     case_insensitive: Option<bool>,
     same_file_system: Option<bool>,
 
-    filter_entry: Option<PyObject>,
+    should_exclude_entry: Option<PyObject>,
 ) -> PyResult<Walker> {
     Ok(Walker::new(
         path,
@@ -228,7 +228,7 @@ fn walk(
         follow_links,
         case_insensitive,
         same_file_system,
-        filter_entry,
+        should_exclude_entry,
     ))
 }
 

@@ -19,7 +19,7 @@ class Walker:
         follow_links: Optional[bool] = None,
         case_insensitive: Optional[bool] = None,
         same_file_system: Optional[bool] = None,
-        filter_entry: Optional[Callable[[str], bool]] = None,
+        should_exclude_entry: Optional[Callable[[Path], bool]] = None,
     ) -> None: ...
     def __iter__(self) -> Iterator[str]: ...
     def __next__(self) -> Optional[str]: ...
@@ -40,5 +40,5 @@ def walk(
     follow_links: Optional[bool] = None,
     case_insensitive: Optional[bool] = None,
     same_file_system: Optional[bool] = None,
-    filter_entry: Optional[Callable[[Path], bool]] = None,
+    should_exclude_entry: Optional[Callable[[Path], bool]] = None,
 ) -> Walker: ...

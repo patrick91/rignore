@@ -50,7 +50,7 @@ def test_filter_entry(folder: Path):
     def should_exclude(entry: Path) -> bool:
         return entry.name != "some_folder"
 
-    paths = list(rignore.walk(folder, filter_entry=should_exclude))
+    paths = list(rignore.walk(folder, should_exclude_entry=should_exclude))
 
     expected_paths = [
         folder,
