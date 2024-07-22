@@ -133,7 +133,7 @@ impl Walker {
 
             builder.filter_entry(move |entry| {
                 match filter(entry) {
-                    Ok(result) => result,
+                    Ok(result) => !result,
                     Err(e) => {
                         // Log the error or handle it as appropriate for your application
                         eprintln!("Error in filter function: {:?}", e);

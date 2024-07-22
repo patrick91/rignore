@@ -48,7 +48,7 @@ def test_basic_walk(folder: Path, folder_structure: list[str]):
 
 def test_filter_entry(folder: Path):
     def should_exclude(entry: Path) -> bool:
-        return entry.name != "some_folder"
+        return entry.name == "some_folder"
 
     paths = list(rignore.walk(folder, should_exclude_entry=should_exclude))
 
