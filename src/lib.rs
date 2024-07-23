@@ -150,8 +150,8 @@ impl Walker {
         Ok(slf.into())
     }
 
-    fn __next__(mut slf: PyRefMut<Self>) -> PyResult<Option<Py<PyAny>>> {
-        Python::with_gil(|py| match slf.0.next() {
+    fn __next__(mut slf: PyRefMut<Self>, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
+        match slf.0.next() {
             Some(Ok(entry)) => {
                 let path_buf = entry.path().to_path_buf();
                 let pathlib_path = path_buf_to_pathlib_path(py, path_buf)?;
@@ -163,7 +163,7 @@ impl Walker {
                 err
             ))),
             None => Ok(None),
-        })
+        }
     }
 }
 
