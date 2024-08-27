@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+
+import pytest
 from typing_extensions import LiteralString
 
 import rignore
-import pytest
-
 
 FOLDER_STRUCTURE = """
 some_file.txt

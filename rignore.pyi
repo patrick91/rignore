@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, List, Callable, Iterator
+from typing import Callable, Iterator, List, Optional
 
 class Walker:
     def __init__(
@@ -21,8 +21,8 @@ class Walker:
         same_file_system: Optional[bool] = None,
         should_exclude_entry: Optional[Callable[[Path], bool]] = None,
     ) -> None: ...
-    def __iter__(self) -> Iterator[str]: ...
-    def __next__(self) -> Optional[str]: ...
+    def __iter__(self) -> Iterator[Path]: ...
+    def __next__(self) -> Optional[Path]: ...
 
 def walk(
     path: Path,
