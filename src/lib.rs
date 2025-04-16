@@ -8,11 +8,11 @@ fn path_buf_to_pathlib_path(py: Python, path_buf: PathBuf) -> PyResult<Py<PyAny>
         .to_str()
         .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyValueError, _>("Invalid path"))?;
 
-    let pathlib_module = py.import_bound("pathlib")?;
+    let pathlib_module = py.import("pathlib")?;
     let path_class = pathlib_module.getattr("Path")?;
     let pathlib_path = path_class.call1((path_str,))?;
 
-    Ok(pathlib_path.into_py(py))
+    Ok(pathlib_path.unbind())
 }
 
 #[pyclass]
