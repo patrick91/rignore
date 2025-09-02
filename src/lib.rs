@@ -62,7 +62,7 @@ impl Walker {
 
         case_insensitive: Option<bool>,
         same_file_system: Option<bool>,
-        should_exclude_entry: Option<PyObject>,
+        should_exclude_entry: Option<Py<PyAny>>,
     ) -> Self {
         let mut builder = ignore::WalkBuilder::new(path);
 
@@ -123,7 +123,7 @@ impl Walker {
 
         if let Some(filter_func) = should_exclude_entry {
             let filter = Arc::new(move |entry: &ignore::DirEntry| -> PyResult<bool> {
-                Python::with_gil(|py| {
+                Python::attach(|py| {
                     let path_buf = entry.path().to_path_buf();
                     let pathlib_path = path_buf_to_pathlib_path(py, path_buf)?;
                     let args = (pathlib_path,);
@@ -210,7 +210,7 @@ fn walk(
     case_insensitive: Option<bool>,
     same_file_system: Option<bool>,
 
-    should_exclude_entry: Option<PyObject>,
+    should_exclude_entry: Option<Py<PyAny>>,
 ) -> PyResult<Walker> {
     Ok(Walker::new(
         path,
