@@ -10,4 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ignore = "0.4.23"
-pyo3 = "0.25.1"
+pyo3 = "0.26.0"
