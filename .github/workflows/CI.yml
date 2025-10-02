@@ -47,6 +47,8 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
+          allow-prereleases: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -84,6 +86,8 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
+          allow-prereleases: true
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -118,7 +122,9 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
           architecture: ${{ matrix.platform.target }}
+          allow-prereleases: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -151,6 +157,8 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
+          allow-prereleases: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
