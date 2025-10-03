@@ -13,6 +13,7 @@
         devShells.default = with pkgs; mkShell {
           buildInputs = [
             pdm
+            ruff
             cargo
             rustc
             rustfmt
