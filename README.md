@@ -45,6 +45,7 @@ rignore.walk(
     require_git=None,
     additional_ignores=None,
     additional_ignore_paths=None,
+    overrides=None,
     max_depth=None,
     max_filesize=None,
     follow_links=None,
@@ -66,6 +67,7 @@ rignore.walk(
 - `require_git` (bool, optional): Whether to require the directory to be a Git repository.
 - `additional_ignores` (List[str], optional): Additional ignore patterns to apply.
 - `additional_ignore_paths` (List[str], optional): Additional ignore file paths to read.
+- `overrides` (List[str], optional): Override globs with the same semantics as gitignore. Globs provided here are treated as whitelist matches, meaning only files matching these patterns will be included. Use `!` at the beginning of a glob to exclude files (e.g., `["*.txt", ".env.example", "!secret.txt"]` will include all `.txt` files and `.env.example`, but exclude `secret.txt`).
 - `max_depth` (int, optional): Maximum depth to traverse.
 - `max_filesize` (int, optional): Maximum file size to consider (in bytes).
 - `follow_links` (bool, optional): Whether to follow symbolic links.
