@@ -3,11 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from inline_snapshot import snapshot
 from typing_extensions import LiteralString
 
 import rignore
 
 FOLDER_STRUCTURE = """
+.hidden
 some_file.txt
 some_folder/
 some_folder/some_file.txt
@@ -36,29 +38,37 @@ def folder(tmp_path: str, folder_structure: list[str]) -> Path:
 
 
 def test_basic_walk(folder: Path, folder_structure: list[str]):
-    paths = list(rignore.walk(folder))
+    paths = [str(path.relative_to(folder)) for path in rignore.walk(folder)]
 
-    expected_paths = [folder] + [folder / path for path in folder_structure]
-
-    assert len(paths) == 7
-
-    for path in paths:
-        assert path in expected_paths
+    assert paths == snapshot(
+        [
+            ".",
+            "an_image.jpg",
+            "some_file.txt",
+            "some_folder",
+            "some_folder/some_file.txt",
+            "some_folder/some_folder",
+            "some_folder/some_folder/some_file.txt",
+        ]
+    )
 
 
 def test_filter_entry(folder: Path):
     def should_exclude(entry: Path) -> bool:
         return entry.name == "some_folder"
 
-    paths = list(rignore.walk(folder, should_exclude_entry=should_exclude))
-
-    expected_paths = [
-        folder,
-        folder / "some_file.txt",
-        folder / "an_image.jpg",
+    paths = [
+        str(path.relative_to(folder))
+        for path in rignore.walk(folder, should_exclude_entry=should_exclude)
     ]
 
-    assert len(paths) == 3
+    assert paths == snapshot([".", "an_image.jpg", "some_file.txt"])
 
-    for path in paths:
-        assert path in expected_paths
+
+def test_overrides(folder: Path):
+    paths = [
+        str(path.relative_to(folder))
+        for path in rignore.walk(folder, overrides=[".hidden"])
+    ]
+
+    assert paths == snapshot([".", ".hidden", "some_folder", "some_folder/some_folder"])
