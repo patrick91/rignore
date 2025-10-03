@@ -107,6 +107,8 @@ jobs:
     strategy:
       matrix:
         platform:
+          - runner: windows-11-arm
+            target: arm64
           - runner: windows-latest
             target: x64
           - runner: windows-latest
