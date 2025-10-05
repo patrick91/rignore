@@ -16,7 +16,7 @@ readme = "README.md"
 license = {text = "MIT"}
 
 [build-system]
-requires = ["maturin>=1.8.3,<2.0"]
+requires = ["maturin>=1.9.5,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
@@ -29,7 +29,7 @@ distribution = true
 dev = [
     "pytest>=8.2.2",
     "typing-extensions>=4.12.2",
-    "maturin>=1.8.3",
+    "maturin>=1.9.5",
 ]
 
 [tool.pdm.scripts]
