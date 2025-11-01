@@ -254,7 +254,7 @@ fn walk(
 }
 
 /// A Python module implemented in Rust.
-#[pymodule]
+#[pymodule(gil_used = false)]
 fn rignore(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Walker>()?;
     m.add_function(wrap_pyfunction!(walk, m)?).unwrap();
