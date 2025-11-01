@@ -191,11 +191,47 @@ jobs:
           name: wheels-sdist
           path: dist
 
+  test:
+    name: Test with Coverage
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install PDM
+        run: pip install pdm
+      - name: Install dependencies
+        run: pdm install -G dev
+      - name: Build package
+        run: pdm run maturin develop
+      - name: Run tests with coverage
+        run: pdm run pytest --cov=rignore --cov-report=term-missing --cov-report=html --cov-report=xml --cov-context=test
+      - name: Store coverage HTML
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.12'
+        with:
+          name: coverage-html-${{ matrix.python-version }}
+          path: htmlcov
+          include-hidden-files: true
+      - name: Store coverage XML
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.12'
+        with:
+          name: coverage-xml-${{ matrix.python-version }}
+          path: coverage.xml
+
   release:
     name: Release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-    needs: [linux, musllinux, windows, windows-arm, macos, sdist]
+    needs: [linux, musllinux, windows, windows-arm, macos, sdist, test]
     permissions:
       # Use to sign the release artifacts
       id-token: write
