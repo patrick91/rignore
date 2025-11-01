@@ -199,20 +199,20 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: ${{ matrix.python-version }}
-          allow-prereleases: true
+          enable-cache: true
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      - name: Install PDM
-        run: pip install pdm
       - name: Install dependencies
-        run: pdm install -G dev
+        run: uv sync --group dev
       - name: Build package
-        run: pdm run maturin develop
+        run: uv run maturin develop --uv
       - name: Run tests with coverage
-        run: pdm run pytest --cov=rignore --cov-report=term-missing --cov-report=html --cov-report=xml --cov-context=test
+        run: uv run pytest --cov=rignore --cov-report=term-missing --cov-report=html --cov-report=xml --cov-context=test
       - name: Store coverage HTML
         uses: actions/upload-artifact@v4
         if: matrix.python-version == '3.12'
