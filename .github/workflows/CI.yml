@@ -136,7 +136,6 @@ jobs:
             3.12
             3.13
             3.14
-            3.14t
           architecture: arm64
           allow-prereleases: true
       - name: Build wheels
