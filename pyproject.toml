@@ -22,16 +22,31 @@ build-backend = "maturin"
 [tool.maturin]
 features = ["pyo3/extension-module"]
 
-[tool.pdm]
-distribution = true
-
-[tool.pdm.scripts]
-test = "pytest"
-
 [dependency-groups]
 dev = [
     "pytest>=8.2.2",
     "typing-extensions>=4.12.2",
     "maturin>=1.9.6",
     "inline-snapshot>=0.29.2",
+    "pytest-cov",
+    "coverage",
 ]
+
+[tool.coverage.run]
+branch = true
+source = ["rignore"]
+parallel = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
