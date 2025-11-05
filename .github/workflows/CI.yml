@@ -173,13 +173,14 @@ jobs:
             3.12
             3.13
             3.14
+            3.14t
           architecture: arm64
           allow-prereleases: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: aarch64
-          args: --release --out dist --interpreter 3.11 3.12 3.13 3.14
+          args: --release --out dist --interpreter 3.11 3.12 3.13 3.14 3.14t
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
       - name: Generate job summary
         shell: bash
