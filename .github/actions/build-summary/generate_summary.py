@@ -19,6 +19,7 @@ PLATFORM_MAPPING = {
     "wheels-windows-x64": "Windows x64",
     "wheels-windows-x86": "Windows x86",
     "wheels-windows-x64-freethreaded": "Windows x64",
+    "wheels-windows-x86-freethreaded": "Windows x86",
     "wheels-windows-arm64": "Windows ARM64",
     "wheels-windows-arm64-freethreaded": "Windows ARM64",
     "wheels-macos-x86_64": "macOS x86_64",

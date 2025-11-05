@@ -144,6 +144,28 @@ jobs:
         with:
           name: wheels-windows-x64-freethreaded
           path: dist
+  
+  windows-x86-freethreaded:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14t'
+          architecture: x86
+          allow-prereleases: true
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86
+          args: --release --out dist --interpreter 3.14t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-x86-freethreaded
+          path: dist
+  
   windows-arm:
     runs-on: windows-11-arm
     steps:
@@ -272,7 +294,7 @@ jobs:
     name: Build Summary
     runs-on: ubuntu-latest
     if: always()
-    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-arm, windows-arm-freethreaded, macos]
+    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-x86-freethreaded, windows-arm, windows-arm-freethreaded, macos]
     steps:
       - uses: actions/checkout@v4
       - name: Download all artifacts
@@ -289,7 +311,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-arm, windows-arm-freethreaded, macos, sdist, test]
+    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-x86-freethreaded, windows-arm, windows-arm-freethreaded, macos, sdist, test]
     permissions:
       # Use to sign the release artifacts
       id-token: write
