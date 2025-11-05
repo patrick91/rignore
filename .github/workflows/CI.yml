@@ -199,6 +199,40 @@ jobs:
         with:
           name: wheels-windows-arm64
           path: dist
+  
+  windows-arm-freethreaded:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14t'
+          architecture: arm64
+          allow-prereleases: true
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: aarch64
+          args: --release --out dist --interpreter 3.14t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Generate job summary
+        shell: bash
+        run: |
+          echo "## Built Wheels" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Platform: Windows ARM64 (Free-threaded)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Wheel | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|------|" >> $GITHUB_STEP_SUMMARY
+          for wheel in dist/*.whl; do
+            size=$(du -h "$wheel" | cut -f1)
+            echo "| \`$(basename "$wheel")\` | $size |" >> $GITHUB_STEP_SUMMARY
+          done
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-arm64-freethreaded
+          path: dist
 
   macos:
     runs-on: ${{ matrix.platform.runner }}
@@ -304,7 +338,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-    needs: [linux, musllinux, windows, windows-arm, macos, sdist, test]
+    needs: [linux, musllinux, windows, windows-arm, windows-arm-freethreaded, macos, sdist, test]
     permissions:
       # Use to sign the release artifacts
       id-token: write
