@@ -1,0 +1,18 @@
+name: 'Build Summary'
+description: 'Generate a summary table of built wheels across all platforms and Python versions'
+inputs:
+  wheels-path:
+    description: 'Path to the directory containing all downloaded wheel artifacts'
+    required: false
+    default: 'all-wheels'
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.14'
+
+    - name: Generate summary
+      shell: bash
+      run: python ${{ github.action_path }}/generate_summary.py "${{ inputs.wheels-path }}"
