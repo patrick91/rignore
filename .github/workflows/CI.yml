@@ -44,31 +44,6 @@ jobs:
           args: --release --out dist --interpreter python3.8 python3.9 python3.10 python3.11 python3.12 python3.13 python3.14 python3.14t pypy3.9 pypy3.10 pypy3.11
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: auto
-      - name: Generate job summary
-        run: |
-          echo "## Built Wheels - Linux ${{ matrix.platform.target }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Version | Wheel | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          for wheel in dist/*.whl; do
-            filename=$(basename "$wheel")
-            size=$(du -h "$wheel" | cut -f1)
-            # Extract Python version from wheel filename
-            if echo "$filename" | grep -q "cp38"; then version="3.8"
-            elif echo "$filename" | grep -q "cp39"; then version="3.9"
-            elif echo "$filename" | grep -q "cp310"; then version="3.10"
-            elif echo "$filename" | grep -q "cp311"; then version="3.11"
-            elif echo "$filename" | grep -q "cp312"; then version="3.12"
-            elif echo "$filename" | grep -q "cp313"; then version="3.13"
-            elif echo "$filename" | grep -q "cp314t"; then version="3.14t"
-            elif echo "$filename" | grep -q "cp314"; then version="3.14"
-            elif echo "$filename" | grep -q "pp39"; then version="PyPy 3.9"
-            elif echo "$filename" | grep -q "pp310"; then version="PyPy 3.10"
-            elif echo "$filename" | grep -q "pp311"; then version="PyPy 3.11"
-            else version="Unknown"
-            fi
-            echo "| **$version** | \`$filename\` | $size |" >> $GITHUB_STEP_SUMMARY
-          done
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -108,31 +83,6 @@ jobs:
             add-apt-repository ppa:deadsnakes/ppa -y
             apt-get update
             apt-get install -y python3.14 python3.14-dev python3.14-venv
-      - name: Generate job summary
-        run: |
-          echo "## Built Wheels - musllinux ${{ matrix.platform.target }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Version | Wheel | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          for wheel in dist/*.whl; do
-            filename=$(basename "$wheel")
-            size=$(du -h "$wheel" | cut -f1)
-            # Extract Python version from wheel filename
-            if echo "$filename" | grep -q "cp38"; then version="3.8"
-            elif echo "$filename" | grep -q "cp39"; then version="3.9"
-            elif echo "$filename" | grep -q "cp310"; then version="3.10"
-            elif echo "$filename" | grep -q "cp311"; then version="3.11"
-            elif echo "$filename" | grep -q "cp312"; then version="3.12"
-            elif echo "$filename" | grep -q "cp313"; then version="3.13"
-            elif echo "$filename" | grep -q "cp314t"; then version="3.14t"
-            elif echo "$filename" | grep -q "cp314"; then version="3.14"
-            elif echo "$filename" | grep -q "pp39"; then version="PyPy 3.9"
-            elif echo "$filename" | grep -q "pp310"; then version="PyPy 3.10"
-            elif echo "$filename" | grep -q "pp311"; then version="PyPy 3.11"
-            else version="Unknown"
-            fi
-            echo "| **$version** | \`$filename\` | $size |" >> $GITHUB_STEP_SUMMARY
-          done
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -151,7 +101,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v6
-        if: matrix.platform.target != 'arm64'
         with:
           python-version: |
             3.8
@@ -161,42 +110,39 @@ jobs:
             3.12
             3.13
             3.14
-            3.14t
           architecture: ${{ matrix.platform.target }}
           allow-prereleases: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --interpreter 3.8 3.9 3.10 3.11 3.12 3.13 3.14 3.14t
+          args: --release --out dist --interpreter 3.8 3.9 3.10 3.11 3.12 3.13 3.14
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      - name: Generate job summary
-        shell: bash
-        run: |
-          echo "## Built Wheels - Windows ${{ matrix.platform.target }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Version | Wheel | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          for wheel in dist/*.whl; do
-            filename=$(basename "$wheel")
-            size=$(du -h "$wheel" | cut -f1)
-            # Extract Python version from wheel filename
-            if echo "$filename" | grep -q "cp38"; then version="3.8"
-            elif echo "$filename" | grep -q "cp39"; then version="3.9"
-            elif echo "$filename" | grep -q "cp310"; then version="3.10"
-            elif echo "$filename" | grep -q "cp311"; then version="3.11"
-            elif echo "$filename" | grep -q "cp312"; then version="3.12"
-            elif echo "$filename" | grep -q "cp313"; then version="3.13"
-            elif echo "$filename" | grep -q "cp314t"; then version="3.14t"
-            elif echo "$filename" | grep -q "cp314"; then version="3.14"
-            else version="Unknown"
-            fi
-            echo "| **$version** | \`$filename\` | $size |" >> $GITHUB_STEP_SUMMARY
-          done
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
           name: wheels-windows-${{ matrix.platform.target }}
+          path: dist
+  
+  windows-x64-freethreaded:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14t'
+          architecture: x64
+          allow-prereleases: true
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist --interpreter 3.14t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-x64-freethreaded
           path: dist
   windows-arm:
     runs-on: windows-11-arm
@@ -217,25 +163,6 @@ jobs:
           target: aarch64
           args: --release --out dist --interpreter 3.11 3.12 3.13 3.14
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      - name: Generate job summary
-        shell: bash
-        run: |
-          echo "## Built Wheels - Windows ARM64" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Version | Wheel | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          for wheel in dist/*.whl; do
-            filename=$(basename "$wheel")
-            size=$(du -h "$wheel" | cut -f1)
-            # Extract Python version from wheel filename
-            if echo "$filename" | grep -q "cp311"; then version="3.11"
-            elif echo "$filename" | grep -q "cp312"; then version="3.12"
-            elif echo "$filename" | grep -q "cp313"; then version="3.13"
-            elif echo "$filename" | grep -q "cp314"; then version="3.14"
-            else version="Unknown"
-            fi
-            echo "| **$version** | \`$filename\` | $size |" >> $GITHUB_STEP_SUMMARY
-          done
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -257,18 +184,6 @@ jobs:
           target: aarch64
           args: --release --out dist --interpreter 3.14t
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      - name: Generate job summary
-        shell: bash
-        run: |
-          echo "## Built Wheels - Windows ARM64 (Free-threaded)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Version | Wheel | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          for wheel in dist/*.whl; do
-            filename=$(basename "$wheel")
-            size=$(du -h "$wheel" | cut -f1)
-            echo "| **3.14t** | \`$filename\` | $size |" >> $GITHUB_STEP_SUMMARY
-          done
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -296,31 +211,6 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --interpreter 3.8 3.9 3.10 3.11 3.12 3.13 3.14 3.14t pypy3.9 pypy3.10 pypy3.11
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      - name: Generate job summary
-        run: |
-          echo "## Built Wheels - macOS ${{ matrix.platform.target }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Version | Wheel | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------------|-------|------|" >> $GITHUB_STEP_SUMMARY
-          for wheel in dist/*.whl; do
-            filename=$(basename "$wheel")
-            size=$(du -h "$wheel" | cut -f1)
-            # Extract Python version from wheel filename
-            if echo "$filename" | grep -q "cp38"; then version="3.8"
-            elif echo "$filename" | grep -q "cp39"; then version="3.9"
-            elif echo "$filename" | grep -q "cp310"; then version="3.10"
-            elif echo "$filename" | grep -q "cp311"; then version="3.11"
-            elif echo "$filename" | grep -q "cp312"; then version="3.12"
-            elif echo "$filename" | grep -q "cp313"; then version="3.13"
-            elif echo "$filename" | grep -q "cp314t"; then version="3.14t"
-            elif echo "$filename" | grep -q "cp314"; then version="3.14"
-            elif echo "$filename" | grep -q "pp39"; then version="PyPy 3.9"
-            elif echo "$filename" | grep -q "pp310"; then version="PyPy 3.10"
-            elif echo "$filename" | grep -q "pp311"; then version="PyPy 3.11"
-            else version="Unknown"
-            fi
-            echo "| **$version** | \`$filename\` | $size |" >> $GITHUB_STEP_SUMMARY
-          done
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -336,16 +226,6 @@ jobs:
         with:
           command: sdist
           args: --out dist
-      - name: Generate job summary
-        run: |
-          echo "## Built Source Distribution" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Type | File | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|------|" >> $GITHUB_STEP_SUMMARY
-          for file in dist/*; do
-            size=$(du -h "$file" | cut -f1)
-            echo "| **sdist** | \`$(basename "$file")\` | $size |" >> $GITHUB_STEP_SUMMARY
-          done
       - name: Upload sdist
         uses: actions/upload-artifact@v4
         with:
@@ -388,11 +268,132 @@ jobs:
           name: coverage-xml-${{ matrix.python-version }}
           path: coverage.xml
 
+  summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-arm, windows-arm-freethreaded, macos]
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: all-wheels
+      - name: Generate global summary
+        shell: bash
+        run: |
+          echo "# Build Summary - All Platforms and Architectures" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Initialize arrays to track platforms and their builds
+          declare -A matrix
+          declare -a platform_order
+          declare -A seen_platforms
+          
+          # Define platform order for consistent display
+          platform_list=(
+            "Linux x86_64"
+            "Linux x86"
+            "Linux aarch64"
+            "Linux armv7"
+            "Linux s390x"
+            "Linux ppc64le"
+            "musllinux x86_64"
+            "musllinux x86"
+            "musllinux aarch64"
+            "musllinux armv7"
+            "Windows x64"
+            "Windows x86"
+            "Windows ARM64"
+            "macOS x86_64"
+            "macOS aarch64"
+          )
+          
+          # Scan all wheels and populate matrix
+          for wheel in all-wheels/**/*.whl; do
+            [ -f "$wheel" ] || continue
+            filename=$(basename "$wheel")
+            
+            # Extract platform info from path
+            platform_path=$(dirname "$wheel")
+            platform_name=$(basename "$platform_path")
+            
+            # Map platform names to readable format (merge FT and non-FT)
+            case "$platform_name" in
+              wheels-linux-x86_64) platform="Linux x86_64" ;;
+              wheels-linux-x86) platform="Linux x86" ;;
+              wheels-linux-aarch64) platform="Linux aarch64" ;;
+              wheels-linux-armv7) platform="Linux armv7" ;;
+              wheels-linux-s390x) platform="Linux s390x" ;;
+              wheels-linux-ppc64le) platform="Linux ppc64le" ;;
+              wheels-musllinux-x86_64) platform="musllinux x86_64" ;;
+              wheels-musllinux-x86) platform="musllinux x86" ;;
+              wheels-musllinux-aarch64) platform="musllinux aarch64" ;;
+              wheels-musllinux-armv7) platform="musllinux armv7" ;;
+              wheels-windows-x64) platform="Windows x64" ;;
+              wheels-windows-x86) platform="Windows x86" ;;
+              wheels-windows-x64-freethreaded) platform="Windows x64" ;;
+              wheels-windows-arm64) platform="Windows ARM64" ;;
+              wheels-windows-arm64-freethreaded) platform="Windows ARM64" ;;
+              wheels-macos-x86_64) platform="macOS x86_64" ;;
+              wheels-macos-aarch64) platform="macOS aarch64" ;;
+              *) continue ;;
+            esac
+            
+            seen_platforms["$platform"]=1
+            
+            # Detect Python version from filename
+            if echo "$filename" | grep -q "cp314t"; then 
+              matrix["$platform|3.14t"]="✅"
+            elif echo "$filename" | grep -q "cp38"; then 
+              matrix["$platform|3.8"]="✅"
+            elif echo "$filename" | grep -q "cp39"; then 
+              matrix["$platform|3.9"]="✅"
+            elif echo "$filename" | grep -q "cp310"; then 
+              matrix["$platform|3.10"]="✅"
+            elif echo "$filename" | grep -q "cp311"; then 
+              matrix["$platform|3.11"]="✅"
+            elif echo "$filename" | grep -q "cp312"; then 
+              matrix["$platform|3.12"]="✅"
+            elif echo "$filename" | grep -q "cp313"; then 
+              matrix["$platform|3.13"]="✅"
+            elif echo "$filename" | grep -q "cp314"; then 
+              matrix["$platform|3.14"]="✅"
+            elif echo "$filename" | grep -q "pp39"; then 
+              matrix["$platform|PyPy3.9"]="✅"
+            elif echo "$filename" | grep -q "pp310"; then 
+              matrix["$platform|PyPy3.10"]="✅"
+            elif echo "$filename" | grep -q "pp311"; then 
+              matrix["$platform|PyPy3.11"]="✅"
+            fi
+          done
+          
+          # Generate table header
+          echo "| Platform | 3.8 | 3.9 | 3.10 | 3.11 | 3.12 | 3.13 | 3.14 | 3.14t | PyPy3.9 | PyPy3.10 | PyPy3.11 |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-----|-----|------|------|------|------|------|-------|---------|----------|----------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Generate rows in defined order
+          for platform in "${platform_list[@]}"; do
+            # Skip if this platform wasn't built
+            [ -n "${seen_platforms[$platform]}" ] || continue
+            
+            row="| **$platform** |"
+            for version in "3.8" "3.9" "3.10" "3.11" "3.12" "3.13" "3.14" "3.14t" "PyPy3.9" "PyPy3.10" "PyPy3.11"; do
+              key="$platform|$version"
+              if [ -n "${matrix[$key]}" ]; then
+                row="$row ✅ |"
+              else
+                row="$row - |"
+              fi
+            done
+            echo "$row" >> $GITHUB_STEP_SUMMARY
+          done
+
   release:
     name: Release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-    needs: [linux, musllinux, windows, windows-arm, windows-arm-freethreaded, macos, sdist, test]
+    needs: [linux, musllinux, windows, windows-x64-freethreaded, windows-arm, windows-arm-freethreaded, macos, sdist, test]
     permissions:
       # Use to sign the release artifacts
       id-token: write
