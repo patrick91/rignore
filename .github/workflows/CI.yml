@@ -123,7 +123,7 @@ jobs:
         with:
           name: wheels-windows-${{ matrix.platform.target }}
           path: dist
-  
+
   windows-x64-freethreaded:
     runs-on: windows-latest
     steps:
@@ -144,7 +144,7 @@ jobs:
         with:
           name: wheels-windows-x64-freethreaded
           path: dist
-  
+
   windows-x86-freethreaded:
     runs-on: windows-latest
     steps:
@@ -165,7 +165,7 @@ jobs:
         with:
           name: wheels-windows-x86-freethreaded
           path: dist
-  
+
   windows-arm:
     runs-on: windows-11-arm
     steps:
@@ -190,7 +190,7 @@ jobs:
         with:
           name: wheels-windows-arm64
           path: dist
-  
+
   windows-arm-freethreaded:
     runs-on: windows-11-arm
     steps:
@@ -303,7 +303,7 @@ jobs:
           pattern: wheels-*
           path: all-wheels
       - name: Generate build summary
-        uses: ./.github/actions/build-summary
+        uses: patrick91/wheels-ci-action@main
         with:
           wheels-path: all-wheels
 
