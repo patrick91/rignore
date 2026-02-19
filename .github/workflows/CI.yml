@@ -38,6 +38,9 @@ jobs:
           - runner: ubuntu-22.04
             arch: ppc64le
             target: powerpc64le-unknown-linux-gnu
+          - runner: ubuntu-22.04
+            arch: riscv64
+            target: riscv64gc-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v6
