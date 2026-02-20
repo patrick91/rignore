@@ -11,50 +11,17 @@ permissions:
   pull-requests: write
 
 jobs:
-  summary:
-    name: Build Summary
+  comment:
+    name: Post PR Comment
     runs-on: ubuntu-latest
     if: github.event.workflow_run.event == 'pull_request'
     steps:
-      - name: Download wheel artifacts
+      - name: Download build summary
         uses: actions/download-artifact@v4
         with:
+          name: build-summary
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
-          pattern: wheels-*
-          path: all-wheels
-
-      - name: Generate build summary
-        uses: patrick91/wheels-ci-action@main
-        with:
-          wheels-path: all-wheels
-          require-matrix: |
-            [
-              {
-                "platform": "Linux*",
-                "versions": "3.8-3.14,3.14t,PyPy3.9-3.11"
-              },
-              {
-                "platform": "musllinux*",
-                "versions": "3.8-3.14,3.14t,PyPy3.9-3.11"
-              },
-              {
-                "platform": "macOS*",
-                "versions": "3.8-3.14,3.14t,PyPy3.9-3.11"
-              },
-              {
-                "platform": "Windows x64",
-                "versions": "3.8-3.14,3.14t"
-              },
-              {
-                "platform": "Windows x86",
-                "versions": "3.8-3.14,3.14t"
-              },
-              {
-                "platform": "Windows ARM64",
-                "versions": "3.11-3.14,3.14t"
-              }
-            ]
 
       - name: Post PR comment
         env:
@@ -69,13 +36,12 @@ jobs:
             exit 0
           fi
 
-          SUMMARY_FILE="${{ runner.temp }}/wheels-summary.md"
-          if [ -f "$SUMMARY_FILE" ]; then
+          if [ -f "wheels-summary.md" ]; then
             gh pr comment "$PR_NUMBER" \
               --repo ${{ github.repository }} \
-              --body-file "$SUMMARY_FILE" \
+              --body-file "wheels-summary.md" \
               --edit-last 2>/dev/null || \
             gh pr comment "$PR_NUMBER" \
               --repo ${{ github.repository }} \
-              --body-file "$SUMMARY_FILE"
+              --body-file "wheels-summary.md"
           fi
