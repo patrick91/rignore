@@ -1,0 +1,81 @@
+name: Post Build Summary
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Download wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          pattern: wheels-*
+          path: all-wheels
+
+      - name: Generate build summary
+        uses: patrick91/wheels-ci-action@main
+        with:
+          wheels-path: all-wheels
+          require-matrix: |
+            [
+              {
+                "platform": "Linux*",
+                "versions": "3.8-3.14,3.14t,PyPy3.9-3.11"
+              },
+              {
+                "platform": "musllinux*",
+                "versions": "3.8-3.14,3.14t,PyPy3.9-3.11"
+              },
+              {
+                "platform": "macOS*",
+                "versions": "3.8-3.14,3.14t,PyPy3.9-3.11"
+              },
+              {
+                "platform": "Windows x64",
+                "versions": "3.8-3.14,3.14t"
+              },
+              {
+                "platform": "Windows x86",
+                "versions": "3.8-3.14,3.14t"
+              },
+              {
+                "platform": "Windows ARM64",
+                "versions": "3.11-3.14,3.14t"
+              }
+            ]
+
+      - name: Post PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER=$(gh api \
+            repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }} \
+            --jq '.pull_requests[0].number')
+
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "Could not determine PR number, skipping comment."
+            exit 0
+          fi
+
+          SUMMARY_FILE="${{ runner.temp }}/wheels-summary.md"
+          if [ -f "$SUMMARY_FILE" ]; then
+            gh pr comment "$PR_NUMBER" \
+              --repo ${{ github.repository }} \
+              --body-file "$SUMMARY_FILE" \
+              --edit-last 2>/dev/null || \
+            gh pr comment "$PR_NUMBER" \
+              --repo ${{ github.repository }} \
+              --body-file "$SUMMARY_FILE"
+          fi
