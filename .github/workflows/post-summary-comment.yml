@@ -23,25 +23,20 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
 
-      - name: Post PR comment
+      - name: Get PR number
+        id: pr
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           PR_NUMBER=$(gh api \
             repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }} \
             --jq '.pull_requests[0].number')
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
-          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-            echo "Could not determine PR number, skipping comment."
-            exit 0
-          fi
-
-          if [ -f "wheels-summary.md" ]; then
-            gh pr comment "$PR_NUMBER" \
-              --repo ${{ github.repository }} \
-              --body-file "wheels-summary.md" \
-              --edit-last 2>/dev/null || \
-            gh pr comment "$PR_NUMBER" \
-              --repo ${{ github.repository }} \
-              --body-file "wheels-summary.md"
-          fi
+      - name: Post PR comment
+        if: steps.pr.outputs.number
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: wheels-ci-summary
+          number: ${{ steps.pr.outputs.number }}
+          path: wheels-summary.md
