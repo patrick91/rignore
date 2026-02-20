@@ -20,17 +20,26 @@ jobs:
       matrix:
         platform:
           - runner: ubuntu-22.04
-            target: x86_64
+            arch: x86_64
+            target: x86_64-unknown-linux-gnu
           - runner: ubuntu-22.04
-            target: x86
+            arch: x86
+            target: i686-unknown-linux-gnu
           - runner: ubuntu-22.04
-            target: aarch64
+            arch: aarch64
+            target: aarch64-unknown-linux-gnu
           - runner: ubuntu-22.04
-            target: armv7
+            arch: armv7
+            target: armv7-unknown-linux-gnueabihf
           - runner: ubuntu-22.04
-            target: s390x
+            arch: s390x
+            target: s390x-unknown-linux-gnu
           - runner: ubuntu-22.04
-            target: ppc64le
+            arch: ppc64le
+            target: powerpc64le-unknown-linux-gnu
+          - runner: ubuntu-22.04
+            arch: riscv64
+            target: riscv64gc-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v6
@@ -47,7 +56,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-linux-${{ matrix.platform.target }}
+          name: wheels-linux-${{ matrix.platform.arch }}
           path: dist
 
   musllinux:
