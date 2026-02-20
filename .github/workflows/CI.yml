@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   linux:
@@ -316,7 +315,6 @@ jobs:
         uses: patrick91/wheels-ci-action@main
         with:
           wheels-path: all-wheels
-          post-comment: "true"
           require-matrix: |
             [
               {
@@ -344,6 +342,13 @@ jobs:
                 "versions": "3.11-3.14,3.14t"
               }
             ]
+      - name: Upload build summary
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-summary
+          path: ${{ runner.temp }}/wheels-summary.md
+
   release:
     name: Release
     runs-on: ubuntu-latest
