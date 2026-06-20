@@ -1,0 +1,59 @@
+name: Release file check
+
+on:
+  pull_request_target:
+    types: [synchronize, reopened, opened, ready_for_review]
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "rignore.pyi"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "pyproject.toml"
+      - "README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  check-release:
+    name: Release check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    if: github.event.pull_request.user.type != 'Bot'
+
+    steps:
+      - name: Checkout release tooling
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            pyproject.toml
+            Cargo.toml
+            scripts/autopub_rignore.py
+          sparse-checkout-cone-mode: false
+
+      - name: Checkout PR release file
+        uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.number }}/merge"
+          path: pr-release
+          persist-credentials: false
+          sparse-checkout: |
+            RELEASE.md
+          sparse-checkout-cone-mode: false
+
+      - name: Copy release file
+        run: cp pr-release/RELEASE.md RELEASE.md || true
+
+      - name: Check for release
+        uses: autopub/autopub-action@5fdc82e84c048a82303de6b5c5a9d027665e73cf # v1.1.1
+        with:
+          command: check
+          autopub-version: "1.0.0a58"
+          fail-on-missing: "true"

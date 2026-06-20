@@ -1,0 +1,21 @@
+name: Prepare release
+description: Apply AutoPub release metadata to the current checkout.
+
+inputs:
+  enabled:
+    description: Whether to prepare the checkout for a release build.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      if: inputs.enabled == 'true'
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+
+    - name: Prepare release
+      if: inputs.enabled == 'true'
+      shell: bash
+      run: uvx --from autopub==1.0.0a58 python scripts/autopub_rignore.py
