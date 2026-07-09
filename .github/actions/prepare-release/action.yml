@@ -33,4 +33,4 @@ runs:
     - name: Prepare release
       if: inputs.enabled == 'true' && inputs.version == ''
       shell: bash
-      run: uvx --from autopub==1.0.0a58 python scripts/autopub_rignore.py
+      run: uvx --from autopub==1.0.0a60 python scripts/autopub_rignore.py

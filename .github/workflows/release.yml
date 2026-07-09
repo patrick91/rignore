@@ -57,12 +57,18 @@ jobs:
       attestations: write
 
     steps:
-      # Check out the branch (not the detached head SHA) so autopub can push
-      # the changelog + version-bump commit and the tag back to it.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
+
+      # Give autopub a named branch while keeping the exact source revision
+      # whose CI artifacts are downloaded below. If main moved after that run,
+      # the eventual push fails safely instead of publishing mismatched source.
+      - name: Restore release branch at tested revision
+        run: |
+          git switch -C "${{ github.event.workflow_run.head_branch }}" "${{ github.event.workflow_run.head_sha }}"
+          git branch --set-upstream-to="origin/${{ github.event.workflow_run.head_branch }}" "${{ github.event.workflow_run.head_branch }}"
 
       - uses: ./.github/actions/prepare-release
         with:
@@ -86,5 +92,5 @@ jobs:
         uses: autopub/autopub-action@5fdc82e84c048a82303de6b5c5a9d027665e73cf # v1.1.1
         with:
           command: publish
-          autopub-version: "1.0.0a58"
+          autopub-version: "1.0.0a60"
           download-artifact: "false"

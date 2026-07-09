@@ -42,7 +42,7 @@ jobs:
         uses: autopub/autopub-action@5fdc82e84c048a82303de6b5c5a9d027665e73cf # v1.1.1
         with:
           command: check
-          autopub-version: "1.0.0a58"
+          autopub-version: "1.0.0a60"
 
       - name: Install uv
         if: steps.release.outputs.has-release == 'true'
@@ -57,7 +57,7 @@ jobs:
         id: version
         if: steps.release.outputs.has-release == 'true'
         run: |
-          version=$(uvx --from autopub==1.0.0a58 --with tomlkit python scripts/version_tool.py compute)
+          version=$(uvx --from autopub==1.0.0a60 --with tomlkit python scripts/version_tool.py compute)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
   linux:
