@@ -57,9 +57,12 @@ jobs:
       attestations: write
 
     steps:
+      # Check out the branch (not the detached head SHA) so autopub can push
+      # the changelog + version-bump commit and the tag back to it.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
 
       - uses: ./.github/actions/prepare-release
         with:
