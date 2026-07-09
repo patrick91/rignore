@@ -21,6 +21,7 @@ jobs:
       pull-requests: write
     outputs:
       has_release: ${{ steps.release.outputs.has-release }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - name: Check for release file
@@ -43,11 +44,21 @@ jobs:
           command: check
           autopub-version: "1.0.0a58"
 
-      - name: Prepare release source
+      - name: Install uv
         if: steps.release.outputs.has-release == 'true'
-        uses: ./.github/actions/prepare-release
+        uses: astral-sh/setup-uv@v4
         with:
-          enabled: "true"
+          enable-cache: true
+
+      # Compute the release version once, here on Linux (autopub needs a
+      # cryptography wheel, which doesn't exist for windows-arm). Build jobs
+      # just stamp this value with a tomlkit-only script.
+      - name: Compute release version
+        id: version
+        if: steps.release.outputs.has-release == 'true'
+        run: |
+          version=$(uvx --from autopub==1.0.0a58 --with tomlkit python scripts/version_tool.py compute)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
   linux:
     needs: release-state
@@ -81,6 +92,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
@@ -117,6 +129,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
@@ -156,6 +169,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: |
@@ -188,6 +202,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14t'
@@ -213,6 +228,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14t'
@@ -238,6 +254,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: |
@@ -267,6 +284,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14t'
@@ -299,6 +317,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
@@ -323,6 +342,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
@@ -346,6 +366,7 @@ jobs:
       - uses: ./.github/actions/prepare-release
         with:
           enabled: ${{ needs.release-state.outputs.has_release }}
+          version: ${{ needs.release-state.outputs.version }}
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:

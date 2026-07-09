@@ -1,10 +1,17 @@
 name: Prepare release
-description: Apply AutoPub release metadata to the current checkout.
+description: Apply the release version to the checkout before building.
 
 inputs:
   enabled:
     description: Whether to prepare the checkout for a release build.
     required: true
+  version:
+    description: >-
+      Pre-computed release version. When set, the version is written into
+      pyproject.toml/Cargo.toml/Cargo.lock with a tomlkit-only script (no
+      autopub, so it works on windows-arm). When empty, full autopub runs.
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -15,7 +22,15 @@ runs:
       with:
         enable-cache: true
 
+    # Build runners: just stamp the already-computed version. No autopub,
+    # so no cryptography build (which has no windows-arm wheel).
+    - name: Apply release version
+      if: inputs.enabled == 'true' && inputs.version != ''
+      shell: bash
+      run: uv run --no-project --with tomlkit python scripts/version_tool.py apply "${{ inputs.version }}"
+
+    # Publish job (Linux): run the full autopub prepare.
     - name: Prepare release
-      if: inputs.enabled == 'true'
+      if: inputs.enabled == 'true' && inputs.version == ''
       shell: bash
       run: uvx --from autopub==1.0.0a58 python scripts/autopub_rignore.py
