@@ -97,6 +97,10 @@ class RignorePlugin(AutopubPlugin):
 
         if repository:
             command.extend(["--index", repository])
+        else:
+            # Skip files already on PyPI so a retried release is idempotent
+            # (a partial upload shouldn't block re-running the release).
+            command.extend(["--check-url", "https://pypi.org/simple/"])
 
         command.extend(str(path) for path in artifacts)
 
