@@ -6,7 +6,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dynamic = ["version"]
+version = "0.7.6"
 description = "Python Bindings for the ignore crate"
 authors = [
     {name = "Patrick Arminio", email = "patrick.arminio@gmail.com"},
@@ -21,6 +21,14 @@ build-backend = "maturin"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+
+[tool.autopub]
+git-username = "github-actions[bot]"
+git-email = "41898282+github-actions[bot]@users.noreply.github.com"
+plugins = [
+    "autopub.plugins.github",
+    "scripts.autopub_rignore",
+]
 
 [dependency-groups]
 dev = [
