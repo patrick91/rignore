@@ -24,55 +24,55 @@ impl Walker {
     #[new]
     #[pyo3(signature = (
         path,
-        ignore_hidden=None,
-        read_ignore_files=None,
-        read_parents_ignores=None,
-        read_git_ignore=None,
-        read_global_git_ignore=None,
-        read_git_exclude=None,
-        require_git=None,
-        additional_ignores=None,
-        additional_ignore_paths=None,
-        overrides=None,
+        ignore_hidden=true,
+        read_ignore_files=true,
+        read_parents_ignores=true,
+        read_git_ignore=true,
+        read_global_git_ignore=true,
+        read_git_exclude=true,
+        require_git=false,
+        additional_ignores=vec![],
+        additional_ignore_paths=vec![],
+        overrides=vec![],
         max_depth=None,
         max_filesize=None,
-        follow_links=None,
-        case_insensitive=None,
-        same_file_system=None,
+        follow_links=false,
+        case_insensitive=false,
+        same_file_system=false,
         should_exclude_entry=None,
     ))]
     fn new(
         path: PathBuf,
 
-        ignore_hidden: Option<bool>,
+        ignore_hidden: bool,
 
-        read_ignore_files: Option<bool>,
-        read_parents_ignores: Option<bool>,
+        read_ignore_files: bool,
+        read_parents_ignores: bool,
 
-        read_git_ignore: Option<bool>,
-        read_global_git_ignore: Option<bool>,
-        read_git_exclude: Option<bool>,
-        require_git: Option<bool>,
+        read_git_ignore: bool,
+        read_global_git_ignore: bool,
+        read_git_exclude: bool,
+        require_git: bool,
 
-        additional_ignores: Option<Vec<String>>,
-        additional_ignore_paths: Option<Vec<String>>,
-        overrides: Option<Vec<String>>,
+        additional_ignores: Vec<String>,
+        additional_ignore_paths: Vec<String>,
+        overrides: Vec<String>,
 
         max_depth: Option<usize>,
         max_filesize: Option<u64>,
 
-        follow_links: Option<bool>,
+        follow_links: bool,
 
-        case_insensitive: Option<bool>,
-        same_file_system: Option<bool>,
+        case_insensitive: bool,
+        same_file_system: bool,
         should_exclude_entry: Option<Py<PyAny>>,
     ) -> Self {
         let mut builder = ignore::WalkBuilder::new(&path);
 
         // doing this at the beginning because otherwise it would override all the other options
-        if let Some(override_patterns) = overrides {
+        if !overrides.is_empty() {
             let mut override_builder = OverrideBuilder::new(&path);
-            for pattern in override_patterns {
+            for pattern in overrides {
                 let _ = override_builder.add(&pattern);
             }
 
@@ -81,60 +81,29 @@ impl Walker {
             }
         }
 
-        if let Some(ignore_hidden) = ignore_hidden {
-            builder.hidden(ignore_hidden);
-        }
-
-        if let Some(follow_links) = follow_links {
-            builder.follow_links(follow_links);
-        }
+        builder.hidden(ignore_hidden);
+        builder.follow_links(follow_links);
 
         builder.max_depth(max_depth);
         builder.max_filesize(max_filesize);
 
-        if let Some(read_ignore_files) = read_ignore_files {
-            builder.ignore(read_ignore_files);
+        builder.ignore(read_ignore_files);
+
+        for pattern in additional_ignores {
+            builder.add_ignore(pattern);
         }
 
-        if let Some(additional_ignores) = additional_ignores {
-            for pattern in additional_ignores {
-                builder.add_ignore(pattern);
-            }
+        for path in additional_ignore_paths {
+            builder.add_custom_ignore_filename(path);
         }
 
-        if let Some(additional_ignore_paths) = additional_ignore_paths {
-            for path in additional_ignore_paths {
-                builder.add_custom_ignore_filename(path);
-            }
-        }
-
-        if let Some(read_parents_ignores) = read_parents_ignores {
-            builder.parents(read_parents_ignores);
-        }
-
-        if let Some(read_global_git_ignore) = read_global_git_ignore {
-            builder.git_global(read_global_git_ignore);
-        }
-
-        if let Some(read_git_ignore) = read_git_ignore {
-            builder.git_ignore(read_git_ignore);
-        }
-
-        if let Some(read_git_exclude) = read_git_exclude {
-            builder.git_exclude(read_git_exclude);
-        }
-
-        if let Some(require_git) = require_git {
-            builder.require_git(require_git);
-        }
-
-        if let Some(case_insensitive) = case_insensitive {
-            builder.ignore_case_insensitive(case_insensitive);
-        }
-
-        if let Some(same_file_system) = same_file_system {
-            builder.same_file_system(same_file_system);
-        }
+        builder.parents(read_parents_ignores);
+        builder.git_global(read_global_git_ignore);
+        builder.git_ignore(read_git_ignore);
+        builder.git_exclude(read_git_exclude);
+        builder.require_git(require_git);
+        builder.ignore_case_insensitive(case_insensitive);
+        builder.same_file_system(same_file_system);
 
 
 
@@ -188,47 +157,47 @@ impl Walker {
 #[pyfunction]
 #[pyo3(signature = (
     path,
-    ignore_hidden=None,
-    read_ignore_files=None,
-    read_parents_ignores=None,
-    read_git_ignore=None,
-    read_global_git_ignore=None,
-    read_git_exclude=None,
-    require_git=None,
-    additional_ignores=None,
-    additional_ignore_paths=None,
-    overrides=None,
+    ignore_hidden=true,
+    read_ignore_files=true,
+    read_parents_ignores=true,
+    read_git_ignore=true,
+    read_global_git_ignore=true,
+    read_git_exclude=true,
+    require_git=false,
+    additional_ignores=vec![],
+    additional_ignore_paths=vec![],
+    overrides=vec![],
     max_depth=None,
     max_filesize=None,
-    follow_links=None,
-    case_insensitive=None,
-    same_file_system=None,
+    follow_links=false,
+    case_insensitive=false,
+    same_file_system=false,
     should_exclude_entry=None,
 ))]
 fn walk(
     path: PathBuf,
 
-    ignore_hidden: Option<bool>,
+    ignore_hidden: bool,
 
-    read_ignore_files: Option<bool>,
-    read_parents_ignores: Option<bool>,
+    read_ignore_files: bool,
+    read_parents_ignores: bool,
 
-    read_git_ignore: Option<bool>,
-    read_global_git_ignore: Option<bool>,
-    read_git_exclude: Option<bool>,
-    require_git: Option<bool>,
+    read_git_ignore: bool,
+    read_global_git_ignore: bool,
+    read_git_exclude: bool,
+    require_git: bool,
 
-    additional_ignores: Option<Vec<String>>,
-    additional_ignore_paths: Option<Vec<String>>,
-    overrides: Option<Vec<String>>,
+    additional_ignores: Vec<String>,
+    additional_ignore_paths: Vec<String>,
+    overrides: Vec<String>,
 
     max_depth: Option<usize>,
     max_filesize: Option<u64>,
 
-    follow_links: Option<bool>,
+    follow_links: bool,
 
-    case_insensitive: Option<bool>,
-    same_file_system: Option<bool>,
+    case_insensitive: bool,
+    same_file_system: bool,
 
     should_exclude_entry: Option<Py<PyAny>>,
 ) -> PyResult<Walker> {
