@@ -16,7 +16,7 @@ readme = "README.md"
 license = {text = "MIT"}
 
 [build-system]
-requires = ["maturin>=1.9.6,<2.0"]
+requires = ["maturin>=1.14.1,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
@@ -34,7 +34,7 @@ plugins = [
 dev = [
     "pytest>=8.2.2",
     "typing-extensions>=4.12.2",
-    "maturin>=1.9.6",
+    "maturin>=1.14.1",
     "inline-snapshot>=0.29.2",
     "pytest-cov",
     "coverage",
