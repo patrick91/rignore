@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+0.8.1 - 2026-08-04
+------------------
+
+This release adds wheels and test coverage for Python 3.15, including
+free-threaded builds, and updates PyO3 and Maturin for compatibility with the
+new interpreter.
+
 0.8.0 - 2026-07-17
 ------------------
 
